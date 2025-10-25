@@ -3,12 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-  <title>Spy Games</title>
+  <title>spygamesS.html</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <!-- Verification moved to verify.html -->
 
+  <div id="label">St Paul Spies</div>
   <div id="label">Time until rendevous</div>
   <div id="clock">--:--:--</div>
 
@@ -42,8 +43,8 @@
     updateClock();
     setInterval(updateClock, 1000);
 
-    // Verify authentication: if not authenticated, redirect to verify page
-    if (sessionStorage.getItem('spyAccessGranted') !== 'true') {
+    // Verify authentication: if not authenticated for the S page, redirect to verify page
+    if (sessionStorage.getItem('spyAccessS') !== 'true') {
       // Use a hard redirect so unauthorized users cannot see the content
       window.location.href = 'verify.html';
     }

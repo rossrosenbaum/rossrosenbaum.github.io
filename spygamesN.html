@@ -9,6 +9,7 @@
 <body>
   <!-- Verification moved to verify.html -->
 
+  <div id="label">Northeast Spies</div>
   <div id="label">Time until rendevous</div>
   <div id="clock">--:--:--</div>
 
@@ -42,8 +43,8 @@
     updateClock();
     setInterval(updateClock, 1000);
 
-    // Verify authentication: if not authenticated, redirect to verify page
-    if (sessionStorage.getItem('spyAccessGranted') !== 'true') {
+    // Verify authentication: if not authenticated for the N page, redirect to verify page
+    if (sessionStorage.getItem('spyAccessN') !== 'true') {
       // Use a hard redirect so unauthorized users cannot see the content
       window.location.href = 'verify.html';
     }

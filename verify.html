@@ -18,29 +18,39 @@
   </div>
 
   <script>
-    // Redirect to spygamesN if already authenticated
-    if (sessionStorage.getItem('spyAccessGranted') === 'true') {
+    // If already authenticated for one of the pages, send user there
+    if (sessionStorage.getItem('spyAccessN') === 'true') {
       window.location.href = 'spygamesN.html';
+    } else if (sessionStorage.getItem('spyAccessS') === 'true') {
+      window.location.href = 'spygamesS.html';
     }
 
-    const correctPassword = 'northeast';
     const input = document.getElementById('password-input');
     const submit = document.getElementById('password-submit');
     const errorMsg = document.querySelector('.password-error');
 
     function checkPassword() {
-      if (input.value === correctPassword) {
-  sessionStorage.setItem('spyAccessGranted', 'true');
-  // Redirect back to the main page
-  window.location.href = 'spygamesN.html';
-      } else {
-        errorMsg.style.visibility = 'visible';
-        input.value = '';
-        // Add shake animation to the container for feedback
-        const container = document.getElementById('password-container');
-        container.style.animation = 'shake 0.5s';
-        setTimeout(() => { container.style.animation = ''; }, 500);
+      const val = (input.value || '').trim();
+      if (val === 'northeast') {
+        // Grant access to the Northeast page only
+        sessionStorage.setItem('spyAccessN', 'true');
+        window.location.href = 'spygamesN.html';
+        return;
       }
+
+      if (val === 'stpaul') {
+        // Grant access to the St. Paul page only
+        sessionStorage.setItem('spyAccessS', 'true');
+        window.location.href = 'spygamesS.html';
+        return;
+      }
+
+      // Wrong password
+      errorMsg.style.visibility = 'visible';
+      input.value = '';
+      const container = document.getElementById('password-container');
+      container.style.animation = 'shake 0.5s';
+      setTimeout(() => { container.style.animation = ''; }, 500);
     }
 
     submit.addEventListener('click', checkPassword);
