@@ -125,10 +125,12 @@
       padding: 0.5em;
       margin: 1em 0;
       font-family: 'Press Start 2P', monospace;
-      font-size: 0.8em;
+      /* Use 16px to prevent mobile browsers from auto-zooming when the input is focused */
+      font-size: 16px;
       width: 80%;
       text-align: center;
       outline: none;
+      -webkit-text-size-adjust: 100%;
     }
 
     #password-input::placeholder {
@@ -215,6 +217,15 @@
         overlay.style.display = 'none';
         // Store in session storage so it persists during the session
         sessionStorage.setItem('spyAccessGranted', 'true');
+        // Remove focus from the input so mobile browsers don't stay zoomed in
+        try { input.blur(); if (document.activeElement) document.activeElement.blur(); } catch (e) {}
+        // Small timeout to allow blur to take effect, then ensure page is scrolled and reset
+        setTimeout(() => {
+          // Scroll to top-left (helps some mobile browsers to reset viewport)
+          window.scrollTo(0, 0);
+          // Attempt to reset any browser zoom (non-standard; harmless fallback)
+          try { document.documentElement.style.zoom = '100%'; } catch (e) {}
+        }, 50);
       } else {
         errorMsg.style.visibility = 'visible';
         input.value = '';
