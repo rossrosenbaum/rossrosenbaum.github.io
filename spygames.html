@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Spy Games</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+    body {
+      background-color: black;
+      color: red;
+      font-family: 'Press Start 2P', monospace;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      flex-direction: column;
+    }
+
+    #clock {
+      font-size: 2em;
+      letter-spacing: 2px;
+    }
+
+    #label {
+      margin-bottom: 20px;
+      font-size: 1em;
+    }
+  </style>
+</head>
+<body>
+  <div id="label">Welcome to spy games</div>
+  <div id="clock">--:--:--</div>
+
+  <script>
+    function updateClock() {
+      const now = new Date();
+      const target = new Date(now);
+      target.setHours(1, 0, 0, 0);
+
+      // If it's past 1AM, set target to 1AM the next day
+      if (now.getHours() >= 1) {
+        target.setDate(target.getDate() + 1);
+      }
+
+      const diff = target - now;
+
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      const format = (n) => n.toString().padStart(2, '0');
+      document.getElementById('clock').textContent =
+        `${format(hours)}:${format(minutes)}:${format(seconds)}`;
+    }
+
+    updateClock();
+    setInterval(updateClock, 1000);
+  </script>
+</body>
+</html>
