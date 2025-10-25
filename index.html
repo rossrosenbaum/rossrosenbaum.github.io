@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <title>Ross Rosenbaum</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+    
     body {
       background-color: #000;
       color: #fff;
@@ -17,11 +19,28 @@
       font-size: 3em;
       letter-spacing: 2px;
     }
+    .spy-button {
+      display: inline-block;
+      font-family: 'Press Start 2P', monospace;
+      text-decoration: none;
+      color: red;
+      padding: 1em 2em;
+      background: rgba(255, 0, 0, 0.1);
+      border: 2px solid red;
+      border-radius: 4px;
+      transition: all 0.3s;
+      margin-top: 2em;
+      font-size: 0.8em;
+    }
+    .spy-button:hover {
+      background: rgba(255, 0, 0, 0.2);
+      transform: scale(1.05);
+    }
   </style>
 </head>
 <body>
   <h1>Ross Rosenbaum</h1>
   <p>I post my projects here.</p>
-  <p><a href="spygames.html">Spy Games</a></p>
+  <a href="spygames.html" class="spy-button">SPY GAMES</a>
 </body>
 </html>
