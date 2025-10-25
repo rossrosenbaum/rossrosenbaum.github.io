@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <title>Spy Games</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
@@ -126,10 +127,13 @@
       padding: 0.5em;
       margin: 1em 0;
       font-family: 'Press Start 2P', monospace;
-      font-size: 32px;
+      font-size: 16px;  /* Safari minimum font size to prevent zoom */
       width: 75%;
       text-align: center;
       outline: none;
+      -webkit-text-size-adjust: 100%;
+      appearance: none;
+      -webkit-appearance: none;  /* Prevents Safari default styling */
     }
 
     #password-input::placeholder {
