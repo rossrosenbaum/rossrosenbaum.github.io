@@ -9,6 +9,8 @@
 <body>
   <!-- Verification moved to verify.html -->
 
+  <button class="logout-button" onclick="logout()">ABORT</button>
+  
   <div id="label">St Paul Spies</div>
   <div id="label">Time until rendevous</div>
   <div id="clock">--:--:--</div>
@@ -19,6 +21,11 @@
   </div>
 
   <script>
+    function logout() {
+      sessionStorage.removeItem('spyAccessS');
+      window.location.href = 'verify.html';
+    }
+
     function updateClock() {
       const now = new Date();
       const target = new Date(now);
