@@ -18,9 +18,9 @@
   </div>
 
   <script>
-    // Redirect to spygames if already authenticated
+    // Redirect to spygamesN if already authenticated
     if (sessionStorage.getItem('spyAccessGranted') === 'true') {
-      window.location.href = 'spygames.html';
+      window.location.href = 'spygamesN.html';
     }
 
     const correctPassword = 'northeast';
@@ -30,9 +30,9 @@
 
     function checkPassword() {
       if (input.value === correctPassword) {
-        sessionStorage.setItem('spyAccessGranted', 'true');
-        // Redirect back to the main page
-        window.location.href = 'spygames.html';
+  sessionStorage.setItem('spyAccessGranted', 'true');
+  // Redirect back to the main page
+  window.location.href = 'spygamesN.html';
       } else {
         errorMsg.style.visibility = 'visible';
         input.value = '';
