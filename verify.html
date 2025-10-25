@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>Verify — Spy Games</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="password-container" style="max-width:600px; margin: 4rem auto;">
+    <div>CLEARANCE REQUIRED</div>
+    <input type="password" id="password-input" placeholder="ENTER PASSWORD" autocomplete="off">
+    <div>
+      <button id="password-submit">VERIFY</button>
+    </div>
+    <div class="password-error">ACCESS DENIED</div>
+    <div id="version">v1.0</div>
+  </div>
+
+  <script>
+    // Redirect to spygames if already authenticated
+    if (sessionStorage.getItem('spyAccessGranted') === 'true') {
+      window.location.href = 'spygames.html';
+    }
+
+    const correctPassword = 'northeast';
+    const input = document.getElementById('password-input');
+    const submit = document.getElementById('password-submit');
+    const errorMsg = document.querySelector('.password-error');
+
+    function checkPassword() {
+      if (input.value === correctPassword) {
+        sessionStorage.setItem('spyAccessGranted', 'true');
+        // Redirect back to the main page
+        window.location.href = 'spygames.html';
+      } else {
+        errorMsg.style.visibility = 'visible';
+        input.value = '';
+        // Add shake animation to the container for feedback
+        const container = document.getElementById('password-container');
+        container.style.animation = 'shake 0.5s';
+        setTimeout(() => { container.style.animation = ''; }, 500);
+      }
+    }
+
+    submit.addEventListener('click', checkPassword);
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') checkPassword();
+    });
+  </script>
+</body>
+</html>

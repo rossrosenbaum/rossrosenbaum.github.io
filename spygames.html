@@ -7,18 +7,7 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div id="password-overlay">
-    <div id="password-container">
-      <div>CLEARANCE REQUIRED</div>
-      <input type="password" id="password-input" placeholder="ENTER PASSWORD" autocomplete="off">
-      <div>
-        <button id="password-submit">VERIFY</button>
-      </div>
-      <div class="password-error">ACCESS DENIED</div>
-      <div id="version">v1.0</div>
-    </div>
-    
-  </div>
+  <!-- Verification moved to verify.html -->
 
   <div id="label">Time until rendevous</div>
   <div id="clock">--:--:--</div>
@@ -53,40 +42,11 @@
     updateClock();
     setInterval(updateClock, 1000);
 
-    // Password protection
-    const correctPassword = "northeast";
-    const overlay = document.getElementById('password-overlay');
-    const input = document.getElementById('password-input');
-    const submit = document.getElementById('password-submit');
-    const errorMsg = document.querySelector('.password-error');
-
-    function checkPassword() {
-      if (input.value === correctPassword) {
-        overlay.style.display = 'none';
-        // Store in session storage so it persists during the session
-        sessionStorage.setItem('spyAccessGranted', 'true');
-      } else {
-        errorMsg.style.visibility = 'visible';
-        input.value = '';
-        // Add screen shake effect
-        overlay.style.animation = 'shake 0.5s';
-        setTimeout(() => {
-          overlay.style.animation = '';
-        }, 500);
-      }
+    // Verify authentication: if not authenticated, redirect to verify page
+    if (sessionStorage.getItem('spyAccessGranted') !== 'true') {
+      // Use a hard redirect so unauthorized users cannot see the content
+      window.location.href = 'verify.html';
     }
-
-    // Check if already authenticated
-    if (sessionStorage.getItem('spyAccessGranted') === 'true') {
-      overlay.style.display = 'none';
-    }
-
-    submit.addEventListener('click', checkPassword);
-    input.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        checkPassword();
-      }
-    });
 
     const missions = [
       "Order a martini - shaken, not stirred - without breaking character",
