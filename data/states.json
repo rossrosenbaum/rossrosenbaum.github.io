@@ -1,1 +1,15 @@
-{}
+{
+  "-er3sgn": {
+    "S": {
+      "mission0": true,
+      "mission1": true,
+      "mission2": true,
+      "mission3": true,
+      "mission4": true,
+      "mission5": true,
+      "mission6": true,
+      "mission7": true,
+      "mission8": true
+    }
+  }
+}
