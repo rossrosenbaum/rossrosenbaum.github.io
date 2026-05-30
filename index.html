@@ -2,9 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Ross Rosenbaum</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Vujahday+Script&display=swap');
     
     body {
       background-color: #000;
@@ -12,12 +14,24 @@
       font-family: Arial, sans-serif;
       text-align: center;
       margin: 0;
-      padding: 0;
+      padding: 1rem;
     }
     h1 {
-      margin-top: 20vh;
-      font-size: 3em;
+      margin-top: 15vh;
+      font-size: clamp(2rem, 8vw, 3em);
       letter-spacing: 2px;
+    }
+    p {
+      max-width: 36rem;
+      margin: 1.5rem auto;
+      line-height: 1.6;
+      font-size: clamp(1rem, 3.5vw, 1.1rem);
+      padding: 0 0.5rem;
+    }
+    .spy-button,
+    .hotdog-button {
+      width: min(100%, 320px);
+      box-sizing: border-box;
     }
     .spy-button {
       display: inline-block;
@@ -30,17 +44,45 @@
       border-radius: 4px;
       transition: all 0.3s;
       margin-top: 2em;
-      font-size: 0.8em;
+      font-size: clamp(0.9rem, 3vw, 1rem);
     }
     .spy-button:hover {
       background: rgba(255, 0, 0, 0.2);
       transform: scale(1.05);
+    }
+    .hotdog-button {
+      display: inline-block;
+      font-family: 'Vujahday Script', monospace;
+      text-decoration: none;
+      color: #ffe436;
+      padding: 0.18em 1em;
+      line-height: 1;
+      font-weight: 700;
+      background: #e7977c;
+      border: 5px solid #e0c58b;
+      border-radius: 30px;
+      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.08);
+      transition: all 0.3s;
+      margin-top: 2em;
+      font-size: 1em;
+    }
+    .hotdog-button:hover {
+      color: #ff3228;
+      transform: scale(1.05);
+    }
+    @media (max-width: 600px) {
+      .spy-button,
+      .hotdog-button {
+        width: 100%;
+        max-width: 100%;
+      }
     }
   </style>
 </head>
 <body>
   <h1>Ross Rosenbaum</h1>
   <p>I post my projects here.</p>
-  <a href="verify.html" class="spy-button">SPY GAMES</a>
+  <a href="verify.html" class="spy-button">SPY GAMES</a><br><br>
+  <a href="hotdogcalc.html" class="hotdog-button">HOT DOG CALC</a>
 </body>
 </html>

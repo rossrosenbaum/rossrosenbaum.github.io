@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hot Dog Calc</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 1rem;
+    }
+    h1 {
+      margin-top: 12vh;
+      font-size: clamp(2rem, 9vw, 2.5em);
+      letter-spacing: 2px;
+    }
+    p {
+      max-width: 36rem;
+      margin: 1.5rem auto;
+      line-height: 1.6;
+      font-size: clamp(1rem, 3.5vw, 1.05rem);
+      padding: 0 0.5rem;
+    }
+    form {
+      display: inline-flex;
+      flex-direction: column;
+      gap: 1rem;
+      max-width: 360px;
+      margin: 0 auto;
+      width: 100%;
+      padding-top: 1rem;
+    }
+    label {
+      font-size: 1rem;
+      text-align: left;
+      width: 100%;
+    }
+    input,
+    button {
+      width: 100%;
+      max-width: 100%;
+      font-size: 1rem;
+      padding: 0.9rem 1rem;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    input {
+      border: 1px solid #fff;
+      background: #111;
+      color: #fff;
+    }
+    button {
+      border: 2px solid red;
+      background: rgba(255, 0, 0, 0.1);
+      color: #fff;
+      cursor: pointer;
+    }
+    .hotdog-button {
+      width: min(100%, 320px);
+      display: inline-block;
+      margin: 0 auto;
+    }
+    a.hotdog-button {
+      margin-top: 1.5rem;
+    }
+    a {
+      display: inline-block;
+      font-family: 'Press Start 2P', monospace;
+      text-decoration: none;
+      color: red;
+      padding: 1em 2em;
+      background: rgba(255, 0, 0, 0.1);
+      border: 2px solid red;
+      border-radius: 4px;
+      margin-top: 2em;
+      width: min(100%, 320px);
+      box-sizing: border-box;
+    }
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 2rem;
+      }
+      form {
+        gap: 0.75rem;
+      }
+      input,
+      button,
+      a {
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Hot Dog Calc</h1>
+  <p>How far are you from achieving your hot dog dreams?</p>
+
+  <form id="hotdog-form">
+    <label for="hotdogs-eaten">Hot Dogs Eaten:</label>
+    <input id="hotdogs-eaten" name="hotdogs-eaten" type="number" min="0" max="100" required>
+    <button type="submit" class="hotdog-button">SUBMIT</button>
+  </form>
+
+  <section id="results" style="display:none; margin-top: 2rem;">
+    <p id="remaining"></p>
+    <p id="per-day"></p>
+    <p id="per-week"></p>
+  </section>
+
+  <script>
+    const hotdogsInput = document.getElementById('hotdogs-eaten');
+    const form = document.getElementById('hotdog-form');
+    const resultsSection = document.getElementById('results');
+    const remainingText = document.getElementById('remaining');
+    const perDayText = document.getElementById('per-day');
+    const perWeekText = document.getElementById('per-week');
+
+    function getDaysAndWeeksLeft() {
+      const now = new Date();
+      const endOfYear = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+      const msLeft = endOfYear - now;
+      const daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
+      const weeksLeft = daysLeft / 7;
+      return { daysLeft, weeksLeft };
+    }
+
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      const hotdogsEaten = Math.min(100, Math.max(0, Number(hotdogsInput.value) || 0));
+      const hotdogsRemaining = 100 - hotdogsEaten;
+      const { daysLeft, weeksLeft } = getDaysAndWeeksLeft();
+      const perDay = daysLeft > 0 ? hotdogsRemaining / daysLeft : hotdogsRemaining;
+      const perWeek = weeksLeft > 0 ? hotdogsRemaining / weeksLeft : hotdogsRemaining;
+
+      remainingText.textContent = `Hotdogs remaining: ${hotdogsRemaining}`;
+      perDayText.textContent = `Hotdogs per day: ${perDay.toFixed(2)}`;
+      perWeekText.textContent = `Hotdogs per week: ${perWeek.toFixed(2)}`;
+      resultsSection.style.display = 'block';
+    });
+  </script>
+</body>
+</html>

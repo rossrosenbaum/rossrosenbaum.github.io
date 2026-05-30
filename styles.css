@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Vujahday+Script&display=swap');
 
 body {
   background-color: black;
@@ -103,6 +104,28 @@ body {
   justify-content: center;
   align-items: center;
   z-index: 1000;
+}
+
+.hotdog-button {
+  display: inline-block;
+  font-family: 'Vujahday Script', monospace;
+  text-decoration: none;
+  color: #ffe436;
+  padding: 0.18em 1em;
+  line-height: 1;
+  font-weight: 900;
+  background: #e7977c;
+  border: 5px solid #e0c58b;
+  border-radius: 30px;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.08);
+  transition: all 0.3s;
+  margin-top: 2em;
+  font-size: 1em;
+}
+
+.hotdog-button:hover {
+  color: #ff3228;
+  transform: scale(1.05);
 }
 
 #password-container {
