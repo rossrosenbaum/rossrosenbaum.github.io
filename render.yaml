@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: rossrosenbaum-github-io-server
+    env: node
+    branch: main
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: SUPABASE_URL
+        value: https://lnylkqovjnpqokvysivd.supabase.co
+      - key: SUPABASE_ANON_KEY
+        value: your-public-anon-key
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        fromSecret: SUPABASE_SERVICE_ROLE_KEY

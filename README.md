@@ -43,7 +43,20 @@ create table states (
 
 - Create a local `.env` from `.env.example` and keep `.env` private.
 - Deploy this Node app to a Node-capable host and keep the Supabase key private.
-- If your frontend remains on GitHub Pages, set `window.API_BASE_URL` to your backend URL in the static pages or replace the default `http://localhost:3000` value.
+
+Render deployment:
+
+- Add the project to Render as a Web Service.
+- Use the `main` branch and the repository root.
+- Set the build command to `npm install` and the start command to `npm start`.
+- Configure the following env vars in Render:
+  - `SUPABASE_URL=https://lnylkqovjnpqokvysivd.supabase.co`
+  - `SUPABASE_SERVICE_ROLE_KEY` (store this as a Render secret)
+  - `SUPABASE_ANON_KEY` (optional for public Supabase access)
+
+The repo now includes `render.yaml` to help Render detect the service and middleware configuration.
+
+If your frontend remains on GitHub Pages, set `window.API_BASE_URL` to your backend URL in the static pages or replace the default `http://localhost:3000` value.
 
 Example: add a small script above your app JavaScript to define `window.API_BASE_URL`:
 
