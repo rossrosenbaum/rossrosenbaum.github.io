@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, 'data', 'states.json');
+const LEADERBOARD_FILE = path.join(__dirname, 'data', 'leaderboard.json');
 
 app.use(bodyParser.json());
 
@@ -26,6 +27,23 @@ function writeData(data) {
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
   } catch (e) {
     console.error('Failed to write data file', e);
+  }
+}
+
+function readLeaderboard() {
+  try {
+    return JSON.parse(fs.readFileSync(LEADERBOARD_FILE, 'utf8')) || [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function writeLeaderboard(entries) {
+  try {
+    fs.mkdirSync(path.dirname(LEADERBOARD_FILE), { recursive: true });
+    fs.writeFileSync(LEADERBOARD_FILE, JSON.stringify(entries, null, 2), 'utf8');
+  } catch (e) {
+    console.error('Failed to write leaderboard file', e);
   }
 }
 
@@ -55,6 +73,37 @@ app.post('/api/state', (req, res) => {
   data[scope][page] = states;
   writeData(data);
   res.json({ ok: true });
+});
+
+// GET leaderboard
+app.get('/api/leaderboard', (req, res) => {
+  const entries = readLeaderboard();
+  res.json({ entries });
+});
+
+// POST leaderboard entry
+app.post('/api/leaderboard', (req, res) => {
+  const { name, hotdogs } = req.body || {};
+  if (!name || typeof hotdogs === 'undefined') {
+    return res.status(400).json({ error: 'name and hotdogs are required in body' });
+  }
+  const entries = readLeaderboard();
+  const normalizedName = String(name).trim().substring(0, 20);
+  const existingIndex = entries.findIndex(entry => entry.name.toLowerCase() === normalizedName.toLowerCase());
+  const newEntry = {
+    name: normalizedName,
+    hotdogs: Number(hotdogs),
+    timestamp: new Date().toISOString()
+  };
+
+  if (existingIndex >= 0) {
+    entries[existingIndex] = newEntry;
+  } else {
+    entries.push(newEntry);
+  }
+
+  writeLeaderboard(entries);
+  res.json({ ok: true, entries });
 });
 
 app.listen(PORT, '0.0.0.0', () => {

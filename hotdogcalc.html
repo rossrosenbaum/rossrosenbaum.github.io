@@ -95,6 +95,85 @@
         font-size: 1rem;
       }
     }
+    #leaderboard-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+    .modal-content {
+      background-color: #1a1a1a;
+      border: 3px solid #ffe436;
+      border-radius: 8px;
+      padding: 2rem;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+    }
+    .modal-content h2 {
+      color: #ffe436;
+      margin-top: 0;
+      font-size: 1.5rem;
+    }
+    #name-input {
+      background: #111;
+      border: 2px solid #ffe436;
+      color: #fff;
+      padding: 0.75rem;
+      margin: 1rem 0;
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      font-size: 1rem;
+    }
+    .modal-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .modal-buttons button {
+      width: auto;
+      padding: 0.75rem 1.5rem;
+    }
+    .modal-buttons button.hotdog-button {
+      width: auto;
+      min-width: 120px;
+      margin-top: 0;
+    }
+    #leaderboard-section {
+      display: none;
+      margin-top: 2rem;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    #leaderboard-section h3 {
+      color: #ffe436;
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+    }
+    .leaderboard-entry {
+      background: rgba(255, 228, 54, 0.1);
+      border-left: 4px solid #ffe436;
+      padding: 0.75rem;
+      margin: 0.5rem 0;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+    .leaderboard-name {
+      font-weight: bold;
+      color: #ffe436;
+    }
+    .leaderboard-score {
+      color: #fff;
+    }
   </style>
 </head>
 <body>
@@ -111,7 +190,24 @@
     <p id="remaining"></p>
     <p id="per-day"></p>
     <p id="per-week"></p>
+    <button id="save-to-leaderboard" class="hotdog-button">SAVE TO LEADERBOARD</button>
   </section>
+
+  <section id="leaderboard-section">
+    <h3>TOP DOGS</h3>
+    <div id="leaderboard-list"></div>
+  </section>
+
+  <div id="leaderboard-modal">
+    <div class="modal-content">
+      <h2>Enter Your Name</h2>
+      <input type="text" id="name-input" placeholder="Your name" maxlength="20">
+      <div class="modal-buttons">
+        <button id="modal-save" class="hotdog-button">SAVE</button>
+        <button id="modal-cancel" class="hotdog-button">CANCEL</button>
+      </div>
+    </div>
+  </div>
 
   <script>
     const hotdogsInput = document.getElementById('hotdogs-eaten');
@@ -120,6 +216,16 @@
     const remainingText = document.getElementById('remaining');
     const perDayText = document.getElementById('per-day');
     const perWeekText = document.getElementById('per-week');
+    const saveToLeaderboardBtn = document.getElementById('save-to-leaderboard');
+    const leaderboardModal = document.getElementById('leaderboard-modal');
+    const nameInput = document.getElementById('name-input');
+    const modalSaveBtn = document.getElementById('modal-save');
+    const modalCancelBtn = document.getElementById('modal-cancel');
+    const leaderboardSection = document.getElementById('leaderboard-section');
+    const leaderboardList = document.getElementById('leaderboard-list');
+
+    let currentHotdogsEaten = 0;
+    const LEADERBOARD_KEY = 'hotdog-leaderboard';
 
     function getDaysAndWeeksLeft() {
       const now = new Date();
@@ -130,10 +236,69 @@
       return { daysLeft, weeksLeft };
     }
 
+    async function fetchLeaderboard() {
+      try {
+        const res = await fetch('/api/leaderboard');
+        if (res.ok) {
+          const json = await res.json();
+          return json.entries || [];
+        }
+      } catch (e) {
+        console.warn('Failed to fetch leaderboard', e);
+      }
+      return [];
+    }
+
+    async function saveScoreToServer(name) {
+      try {
+        const res = await fetch('/api/leaderboard', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, hotdogs: currentHotdogsEaten })
+        });
+        if (res.ok) {
+          const json = await res.json();
+          return json.entries || [];
+        }
+      } catch (e) {
+        console.warn('Failed to save score', e);
+      }
+      return [];
+    }
+
+    async function displayLeaderboard() {
+      const entries = await fetchLeaderboard();
+      if (entries.length === 0) {
+        leaderboardSection.style.display = 'none';
+        return;
+      }
+      leaderboardSection.style.display = 'block';
+      leaderboardList.innerHTML = entries
+        .sort((a, b) => b.hotdogs - a.hotdogs)
+        .map((entry, idx) => `
+          <div class="leaderboard-entry">
+            <span class="leaderboard-name">${idx + 1}. ${entry.name}</span>
+            <span class="leaderboard-score"> — ${entry.hotdogs} hot dogs</span>
+          </div>
+        `)
+        .join('');
+    }
+
+    function showLeaderboardModal() {
+      nameInput.value = '';
+      leaderboardModal.style.display = 'flex';
+      nameInput.focus();
+    }
+
+    function hideLeaderboardModal() {
+      leaderboardModal.style.display = 'none';
+    }
+
+
     form.addEventListener('submit', event => {
       event.preventDefault();
-      const hotdogsEaten = Math.min(100, Math.max(0, Number(hotdogsInput.value) || 0));
-      const hotdogsRemaining = 100 - hotdogsEaten;
+      currentHotdogsEaten = Math.min(100, Math.max(0, Number(hotdogsInput.value) || 0));
+      const hotdogsRemaining = 100 - currentHotdogsEaten;
       const { daysLeft, weeksLeft } = getDaysAndWeeksLeft();
       const perDay = daysLeft > 0 ? hotdogsRemaining / daysLeft : hotdogsRemaining;
       const perWeek = weeksLeft > 0 ? hotdogsRemaining / weeksLeft : hotdogsRemaining;
@@ -143,6 +308,25 @@
       perWeekText.textContent = `Hotdogs per week: ${perWeek.toFixed(2)}`;
       resultsSection.style.display = 'block';
     });
+
+    saveToLeaderboardBtn.addEventListener('click', showLeaderboardModal);
+    modalSaveBtn.addEventListener('click', async () => {
+      if (!nameInput.value.trim()) return;
+      await saveScoreToServer(nameInput.value.trim());
+      displayLeaderboard();
+      hideLeaderboardModal();
+    });
+    modalCancelBtn.addEventListener('click', hideLeaderboardModal);
+    nameInput.addEventListener('keypress', async (e) => {
+      if (e.key === 'Enter' && nameInput.value.trim()) {
+        await saveScoreToServer(nameInput.value.trim());
+        displayLeaderboard();
+        hideLeaderboardModal();
+      }
+    });
+
+    // Display leaderboard on page load
+    displayLeaderboard();
   </script>
 </body>
 </html>

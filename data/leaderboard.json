@@ -1,0 +1,17 @@
+[
+  {
+    "name": "tendog",
+    "hotdogs": 20,
+    "timestamp": "2026-05-31T00:24:55.785Z"
+  },
+  {
+    "name": "RR",
+    "hotdogs": 10,
+    "timestamp": "2026-05-31T00:24:28.419Z"
+  },
+  {
+    "name": "test",
+    "hotdogs": 30,
+    "timestamp": "2026-05-31T00:25:15.189Z"
+  }
+]
