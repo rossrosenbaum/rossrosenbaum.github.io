@@ -65,10 +65,40 @@ async function readLeaderboard() {
   return data || [];
 }
 
+async function findLeaderboardEntryByNameInsensitive(name) {
+  const { data, error } = await supabase
+    .from('leaderboard')
+    .select('name, hotdogs, timestamp')
+    .ilike('name', name)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Failed to find leaderboard entry', error);
+    return null;
+  }
+
+  return data || null;
+}
+
 async function writeLeaderboard(entry) {
+  const existingEntry = await findLeaderboardEntryByNameInsensitive(entry.name);
+  if (existingEntry) {
+    const { error } = await supabase
+      .from('leaderboard')
+      .update({ hotdogs: entry.hotdogs, timestamp: entry.timestamp })
+      .eq('name', existingEntry.name);
+
+    if (error) {
+      console.error('Failed to update leaderboard entry', error);
+      return false;
+    }
+
+    return true;
+  }
+
   const { error } = await supabase
     .from('leaderboard')
-    .upsert(entry, { onConflict: ['name'] });
+    .insert(entry);
 
   if (error) {
     console.error('Failed to write leaderboard entry', error);
