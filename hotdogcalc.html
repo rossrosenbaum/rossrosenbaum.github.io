@@ -224,6 +224,7 @@
     const leaderboardSection = document.getElementById('leaderboard-section');
     const leaderboardList = document.getElementById('leaderboard-list');
 
+    const API_BASE_URL = window.API_BASE_URL || 'http://localhost:3000';
     let currentHotdogsEaten = 0;
     const LEADERBOARD_KEY = 'hotdog-leaderboard';
 
@@ -238,7 +239,7 @@
 
     async function fetchLeaderboard() {
       try {
-        const res = await fetch('/api/leaderboard');
+        const res = await fetch(`${API_BASE_URL}/api/leaderboard`);
         if (res.ok) {
           const json = await res.json();
           return json.entries || [];
@@ -251,7 +252,7 @@
 
     async function saveScoreToServer(name) {
       try {
-        const res = await fetch('/api/leaderboard', {
+        const res = await fetch(`${API_BASE_URL}/api/leaderboard`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, hotdogs: currentHotdogsEaten })

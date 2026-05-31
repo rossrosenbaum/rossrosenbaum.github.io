@@ -26,6 +26,7 @@
       window.location.href = 'verify.html';
     }
 
+    const API_BASE_URL = window.API_BASE_URL || 'http://localhost:3000';
     // Persistence: use global, page-level state scoped to password.
     const pageId = 'S'; // used by the server to distinguish pages
     
@@ -45,7 +46,7 @@
 
     async function loadState() {
       try {
-        const resp = await fetch(`/api/state?page=${encodeURIComponent(pageId)}&key=${encodeURIComponent(stateKey)}`);
+        const resp = await fetch(`${API_BASE_URL}/api/state?page=${encodeURIComponent(pageId)}&key=${encodeURIComponent(stateKey)}`);
         if (resp.ok) {
           const json = await resp.json();
           return json.states || {};
@@ -58,7 +59,7 @@
 
     async function saveState(states) {
       try {
-        await fetch('/api/state', {
+        await fetch(`${API_BASE_URL}/api/state`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
