@@ -11,101 +11,233 @@ const PORT = process.env.PORT || 3000;
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
 
-if (!SUPABASE_URL || !SUPABASE_KEY) {
-  console.error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY / SUPABASE_ANON_KEY');
-  process.exit(1);
+let supabase = null;
+let usingSupabase = false;
+const stateStore = new Map();
+const leaderboardStore = new Map();
+
+function normalizeName(name) {
+  return String(name || '').trim().substring(0, 20);
 }
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+function getStateKey(scope, page) {
+  return `${scope || 'global'}:${page}`;
+}
+
+function hasUsableSupabaseConfig(url, key) {
+  if (!url || !key) {
+    return false;
+  }
+
+  const normalizedUrl = String(url).trim().toLowerCase();
+  const normalizedKey = String(key).trim().toLowerCase();
+  return !normalizedUrl.includes('your-') && !normalizedKey.includes('your-') && !normalizedKey.includes('placeholder') && !normalizedUrl.includes('example');
+}
+
+if (hasUsableSupabaseConfig(SUPABASE_URL, SUPABASE_KEY)) {
+  try {
+    supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+    usingSupabase = true;
+  } catch (error) {
+    console.warn('Supabase client initialization failed; falling back to in-memory storage', error.message);
+  }
+} else {
+  console.warn('Supabase not configured or using placeholder values; using in-memory storage for local testing');
+}
 
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
 async function readState(scope, page) {
-  const { data, error } = await supabase
-    .from('states')
-    .select('states')
-    .eq('scope', scope)
-    .eq('page', page)
-    .maybeSingle();
-
-  if (error) {
-    console.error('Failed to read state', error);
-    return {};
+  if (!usingSupabase || !supabase) {
+    return stateStore.get(getStateKey(scope, page)) || {};
   }
 
-  return (data && data.states) || {};
+  try {
+    const { data, error } = await supabase
+      .from('states')
+      .select('states')
+      .eq('scope', scope)
+      .eq('page', page)
+      .maybeSingle();
+
+    if (error) {
+      throw error;
+    }
+
+    return (data && data.states) || {};
+  } catch (error) {
+    console.warn('Supabase unavailable for state read; falling back to in-memory storage', error.message);
+    usingSupabase = false;
+    supabase = null;
+    return stateStore.get(getStateKey(scope, page)) || {};
+  }
 }
 
 async function saveState(scope, page, states) {
-  const { error } = await supabase
-    .from('states')
-    .upsert({ scope, page, states }, { onConflict: ['scope', 'page'] });
-
-  if (error) {
-    console.error('Failed to save state', error);
-    return false;
-  }
-
-  return true;
-}
-
-async function readLeaderboard() {
-  const { data, error } = await supabase
-    .from('leaderboard')
-    .select('name, hotdogs, timestamp')
-    .order('hotdogs', { ascending: false });
-
-  if (error) {
-    console.error('Failed to read leaderboard', error);
-    return [];
-  }
-
-  return data || [];
-}
-
-async function findLeaderboardEntryByNameInsensitive(name) {
-  const { data, error } = await supabase
-    .from('leaderboard')
-    .select('name, hotdogs, timestamp')
-    .ilike('name', name)
-    .maybeSingle();
-
-  if (error) {
-    console.error('Failed to find leaderboard entry', error);
-    return null;
-  }
-
-  return data || null;
-}
-
-async function writeLeaderboard(entry) {
-  const existingEntry = await findLeaderboardEntryByNameInsensitive(entry.name);
-  if (existingEntry) {
-    const { error } = await supabase
-      .from('leaderboard')
-      .update({ hotdogs: entry.hotdogs, timestamp: entry.timestamp })
-      .eq('name', existingEntry.name);
-
-    if (error) {
-      console.error('Failed to update leaderboard entry', error);
-      return false;
-    }
-
+  if (!usingSupabase || !supabase) {
+    stateStore.set(getStateKey(scope, page), states);
     return true;
   }
 
-  const { error } = await supabase
-    .from('leaderboard')
-    .insert(entry);
+  try {
+    const { error } = await supabase
+      .from('states')
+      .upsert({ scope, page, states }, { onConflict: ['scope', 'page'] });
 
-  if (error) {
-    console.error('Failed to write leaderboard entry', error);
-    return false;
+    if (error) {
+      throw error;
+    }
+
+    return true;
+  } catch (error) {
+    console.warn('Supabase unavailable for state save; falling back to in-memory storage', error.message);
+    usingSupabase = false;
+    supabase = null;
+    stateStore.set(getStateKey(scope, page), states);
+    return true;
+  }
+}
+
+async function readLeaderboard() {
+  if (!usingSupabase || !supabase) {
+    return Array.from(leaderboardStore.values()).sort((a, b) => b.hotdogs - a.hotdogs);
   }
 
-  return true;
+  try {
+    const { data, error } = await supabase
+      .from('leaderboard')
+      .select('name, hotdogs, timestamp')
+      .order('hotdogs', { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    return data || [];
+  } catch (error) {
+    console.warn('Supabase unavailable for leaderboard read; falling back to in-memory storage', error.message);
+    usingSupabase = false;
+    supabase = null;
+    return Array.from(leaderboardStore.values()).sort((a, b) => b.hotdogs - a.hotdogs);
+  }
+}
+
+async function findLeaderboardEntryByNameInsensitive(name) {
+  if (!usingSupabase || !supabase) {
+    const normalizedName = normalizeName(name).toLowerCase();
+    return Array.from(leaderboardStore.values()).find((entry) => normalizeName(entry.name).toLowerCase() === normalizedName) || null;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('leaderboard')
+      .select('name, hotdogs, timestamp')
+      .ilike('name', name)
+      .maybeSingle();
+
+    if (error) {
+      throw error;
+    }
+
+    return data || null;
+  } catch (error) {
+    console.warn('Supabase unavailable for leaderboard lookup; falling back to in-memory storage', error.message);
+    usingSupabase = false;
+    supabase = null;
+    const normalizedName = normalizeName(name).toLowerCase();
+    return Array.from(leaderboardStore.values()).find((entry) => normalizeName(entry.name).toLowerCase() === normalizedName) || null;
+  }
+}
+
+async function writeLeaderboard(entry) {
+  const normalizedName = normalizeName(entry.name);
+  const normalizedEntry = { ...entry, name: normalizedName, timestamp: entry.timestamp || new Date().toISOString() };
+
+  if (!usingSupabase || !supabase) {
+    const existingEntry = await findLeaderboardEntryByNameInsensitive(normalizedName);
+    if (existingEntry) {
+      leaderboardStore.set(normalizeName(existingEntry.name).toLowerCase(), normalizedEntry);
+    } else {
+      leaderboardStore.set(normalizedName.toLowerCase(), normalizedEntry);
+    }
+    return true;
+  }
+
+  try {
+    const existingEntry = await findLeaderboardEntryByNameInsensitive(normalizedName);
+    if (existingEntry) {
+      const { error } = await supabase
+        .from('leaderboard')
+        .update({ hotdogs: normalizedEntry.hotdogs, timestamp: normalizedEntry.timestamp })
+        .eq('name', existingEntry.name);
+
+      if (error) {
+        throw error;
+      }
+
+      return true;
+    }
+
+    const { error } = await supabase
+      .from('leaderboard')
+      .insert(normalizedEntry);
+
+    if (error) {
+      throw error;
+    }
+
+    return true;
+  } catch (error) {
+    console.warn('Supabase unavailable for leaderboard write; falling back to in-memory storage', error.message);
+    usingSupabase = false;
+    supabase = null;
+    const existingEntry = await findLeaderboardEntryByNameInsensitive(normalizedName);
+    if (existingEntry) {
+      leaderboardStore.set(normalizeName(existingEntry.name).toLowerCase(), normalizedEntry);
+    } else {
+      leaderboardStore.set(normalizedName.toLowerCase(), normalizedEntry);
+    }
+    return true;
+  }
+}
+
+async function deleteLeaderboardEntryByName(name) {
+  const normalizedName = normalizeName(name);
+  if (!usingSupabase || !supabase) {
+    for (const [key, entry] of leaderboardStore.entries()) {
+      if (normalizeName(entry.name).toLowerCase() === normalizedName.toLowerCase()) {
+        leaderboardStore.delete(key);
+        break;
+      }
+    }
+    return true;
+  }
+
+  try {
+    const { error } = await supabase
+      .from('leaderboard')
+      .delete()
+      .ilike('name', normalizedName);
+
+    if (error) {
+      throw error;
+    }
+
+    return true;
+  } catch (error) {
+    console.warn('Supabase unavailable for leaderboard delete; falling back to in-memory storage', error.message);
+    usingSupabase = false;
+    supabase = null;
+    for (const [key, entry] of leaderboardStore.entries()) {
+      if (normalizeName(entry.name).toLowerCase() === normalizedName.toLowerCase()) {
+        leaderboardStore.delete(key);
+        break;
+      }
+    }
+    return true;
+  }
 }
 
 app.get('/api/state', async (req, res) => {
@@ -153,6 +285,20 @@ app.post('/api/leaderboard', async (req, res) => {
 
   if (!await writeLeaderboard(entry)) {
     return res.status(500).json({ error: 'Failed to persist leaderboard entry' });
+  }
+
+  const entries = await readLeaderboard();
+  res.json({ ok: true, entries });
+});
+
+app.delete('/api/leaderboard/:name', async (req, res) => {
+  const { name } = req.params;
+  if (!name) {
+    return res.status(400).json({ error: 'name is required' });
+  }
+
+  if (!await deleteLeaderboardEntryByName(name)) {
+    return res.status(500).json({ error: 'Failed to delete leaderboard entry' });
   }
 
   const entries = await readLeaderboard();

@@ -166,6 +166,10 @@
       margin: 0.5rem 0;
       text-align: left;
       font-size: 0.9rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
     }
     .leaderboard-name {
       font-weight: bold;
@@ -173,6 +177,21 @@
     }
     .leaderboard-score {
       color: #fff;
+    }
+    .leaderboard-delete {
+      background: transparent;
+      border: 1px solid #ff4d4d;
+      color: #ff4d4d;
+      cursor: pointer;
+      padding: 0;
+      width: 1.8rem;
+      height: 1.8rem;
+      font-size: 1rem;
+      line-height: 1;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
   </style>
 </head>
@@ -224,7 +243,11 @@
     const leaderboardSection = document.getElementById('leaderboard-section');
     const leaderboardList = document.getElementById('leaderboard-list');
 
-    const API_BASE_URL = window.API_BASE_URL || 'https://rossrosenbaum-github-io.onrender.com';
+    const API_BASE_URL = window.API_BASE_URL || (
+      window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'http://localhost:3000'
+        : 'https://rossrosenbaum-github-io.onrender.com'
+    );
     let currentHotdogsEaten = 0;
     const LEADERBOARD_KEY = 'hotdog-leaderboard';
 
@@ -267,6 +290,30 @@
       return [];
     }
 
+    async function deleteLeaderboardEntry(name) {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/leaderboard/${encodeURIComponent(name)}`, {
+          method: 'DELETE'
+        });
+        if (res.ok) {
+          const json = await res.json();
+          return json.entries || [];
+        }
+      } catch (e) {
+        console.warn('Failed to delete score', e);
+      }
+      return [];
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
     async function displayLeaderboard() {
       const entries = await fetchLeaderboard();
       if (entries.length === 0) {
@@ -278,8 +325,11 @@
         .sort((a, b) => b.hotdogs - a.hotdogs)
         .map((entry, idx) => `
           <div class="leaderboard-entry">
-            <span class="leaderboard-name">${idx + 1}. ${entry.name}</span>
-            <span class="leaderboard-score"> — ${entry.hotdogs} hot dogs</span>
+            <div>
+              <span class="leaderboard-name">${idx + 1}. ${escapeHtml(entry.name)}</span>
+              <span class="leaderboard-score"> — ${entry.hotdogs} hot dogs</span>
+            </div>
+            <button class="leaderboard-delete" type="button" data-name="${escapeHtml(entry.name)}" aria-label="Delete ${escapeHtml(entry.name)}">×</button>
           </div>
         `)
         .join('');
@@ -308,6 +358,20 @@
       perDayText.textContent = `Hotdogs per day: ${perDay.toFixed(2)}`;
       perWeekText.textContent = `Hotdogs per week: ${perWeek.toFixed(2)}`;
       resultsSection.style.display = 'block';
+    });
+
+    leaderboardList.addEventListener('click', async (event) => {
+      const deleteButton = event.target.closest('.leaderboard-delete');
+      if (!deleteButton) return;
+
+      const entryName = deleteButton.getAttribute('data-name');
+      if (!entryName) return;
+
+      const confirmed = window.confirm(`Are you sure you want to delete ${entryName} from the leaderboard?`);
+      if (!confirmed) return;
+
+      await deleteLeaderboardEntry(entryName);
+      displayLeaderboard();
     });
 
     saveToLeaderboardBtn.addEventListener('click', showLeaderboardModal);
