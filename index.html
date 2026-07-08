@@ -6,8 +6,8 @@
   <title>Ross Rosenbaum</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-    @import url('https://fonts.googleapis.com/css2?family=Vujahday+Script&display=swap');
-    
+    @import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap');
+
     body {
       background-color: #000;
       color: #fff;
@@ -28,12 +28,9 @@
       font-size: clamp(1rem, 3.5vw, 1.1rem);
       padding: 0 0.5rem;
     }
-    .spy-button,
-    .hotdog-button {
+    .spy-button {
       width: min(100%, 320px);
       box-sizing: border-box;
-    }
-    .spy-button {
       display: inline-block;
       font-family: 'Press Start 2P', monospace;
       text-decoration: none;
@@ -50,29 +47,63 @@
       background: rgba(255, 0, 0, 0.2);
       transform: scale(1.05);
     }
-    .hotdog-button {
-      display: inline-block;
-      font-family: 'Vujahday Script', monospace;
-      text-decoration: none;
-      color: #ffe436;
-      padding: 0.18em 1em;
-      line-height: 1;
-      font-weight: 700;
-      background: #e7977c;
-      border: 5px solid #e0c58b;
-      border-radius: 30px;
-      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.08);
-      transition: all 0.3s;
+    .hotdog-btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 220px;
+      max-width: 100%;
+      height: 70px;
+      padding: 0 1.75rem;
+      border: none;
+      cursor: pointer;
+      border-radius: 999px;
       margin-top: 2em;
-      font-size: 1em;
+      text-decoration: none;
+      background: linear-gradient(to bottom, #e8b35c 0%, #d99a3f 45%, #c98530 100%);
+      box-shadow:
+        inset 0 -6px 8px rgba(120, 70, 10, 0.35),
+        inset 0 4px 6px rgba(255, 240, 210, 0.6),
+        0 4px 10px rgba(0, 0, 0, 0.25);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
-    .hotdog-button:hover {
-      color: #ff3228;
-      transform: scale(1.05);
+    .hotdog-btn:hover {
+      transform: translateY(-2px);
+      box-shadow:
+        inset 0 -6px 8px rgba(120, 70, 10, 0.35),
+        inset 0 4px 6px rgba(255, 240, 210, 0.6),
+        0 8px 14px rgba(0, 0, 0, 0.3);
+    }
+    .hotdog-btn:active {
+      transform: translateY(1px);
+    }
+    .hotdog-btn::before {
+      content: "";
+      position: absolute;
+      left: -10px;
+      right: -10px;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 34px;
+      border-radius: 999px;
+      background: linear-gradient(to bottom, #b5451f 0%, #8f2f13 55%, #7a260f 100%);
+      box-shadow:
+        inset 0 3px 4px rgba(255, 180, 140, 0.5),
+        inset 0 -4px 6px rgba(0, 0, 0, 0.35);
+    }
+    .hotdog-btn .mustard-text {
+      position: relative;
+      z-index: 3;
+      font-family: 'Permanent Marker', cursive;
+      color: #f4c430;
+      font-size: 20px;
+      font-weight: 400;
+      text-shadow: 0 1px 1px rgba(0,0,0,0.35);
+      pointer-events: none;
     }
     @media (max-width: 600px) {
-      .spy-button,
-      .hotdog-button {
+      .spy-button {
         width: 100%;
         max-width: 100%;
       }
@@ -83,6 +114,6 @@
   <h1>Ross Rosenbaum</h1>
   <p>I post my projects here.</p>
   <a href="verify.html" class="spy-button">SPY GAMES</a><br><br>
-  <a href="hotdogcalc.html" class="hotdog-button">HOT DOG CALC</a>
+  <a href="hotdogcalc.html" class="hotdog-btn"><span class="mustard-text">HOT DOG CALC</span></a>
 </body>
 </html>
