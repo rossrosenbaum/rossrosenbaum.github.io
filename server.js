@@ -46,7 +46,7 @@ if (hasUsableSupabaseConfig(SUPABASE_URL, SUPABASE_KEY)) {
 }
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '3mb' }));
 app.use(express.static(path.join(__dirname)));
 
 async function readState(scope, page) {
@@ -108,7 +108,7 @@ async function readLeaderboard() {
   try {
     const { data, error } = await supabase
       .from('leaderboard')
-      .select('name, hotdogs, timestamp')
+      .select('name, hotdogs, timestamp, image')
       .order('hotdogs', { ascending: false });
 
     if (error) {
@@ -133,7 +133,7 @@ async function findLeaderboardEntryByNameInsensitive(name) {
   try {
     const { data, error } = await supabase
       .from('leaderboard')
-      .select('name, hotdogs, timestamp')
+      .select('name, hotdogs, timestamp, image')
       .ilike('name', name)
       .maybeSingle();
 
@@ -170,7 +170,7 @@ async function writeLeaderboard(entry) {
     if (existingEntry) {
       const { error } = await supabase
         .from('leaderboard')
-        .update({ hotdogs: normalizedEntry.hotdogs, timestamp: normalizedEntry.timestamp })
+        .update({ hotdogs: normalizedEntry.hotdogs, timestamp: normalizedEntry.timestamp, image: normalizedEntry.image })
         .eq('name', existingEntry.name);
 
       if (error) {
@@ -271,15 +271,20 @@ app.get('/api/leaderboard', async (req, res) => {
 });
 
 app.post('/api/leaderboard', async (req, res) => {
-  const { name, hotdogs } = req.body || {};
+  const { name, hotdogs, image } = req.body || {};
   if (!name || typeof hotdogs === 'undefined') {
     return res.status(400).json({ error: 'name and hotdogs are required in body' });
+  }
+
+  if (image && (typeof image !== 'string' || !/^data:image\/(png|jpeg|jpg|webp|gif);base64,/.test(image))) {
+    return res.status(400).json({ error: 'image must be a base64 data URL' });
   }
 
   const normalizedName = String(name).trim().substring(0, 20);
   const entry = {
     name: normalizedName,
     hotdogs: Number(hotdogs),
+    image: image || null,
     timestamp: new Date().toISOString()
   };
 

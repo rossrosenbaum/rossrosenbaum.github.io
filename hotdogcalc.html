@@ -40,6 +40,7 @@
       padding-top: 1rem;
     }
     label {
+      display: block;
       font-size: 1rem;
       text-align: left;
       width: 100%;
@@ -158,6 +159,72 @@
         font-size: 1rem;
       }
     }
+    .hotdog-gallery {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      width: 100%;
+      max-width: 360px;
+      margin: 1.5rem auto 2rem;
+      padding: 0 0.5rem;
+      box-sizing: border-box;
+    }
+    .gallery-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.3rem;
+      min-width: 0;
+    }
+    .gallery-tile {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 6px;
+      border: 2px solid #ffe436;
+      background-color: #111;
+      background-size: cover;
+      background-position: center;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+    .gallery-rank {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      background: rgba(0, 0, 0, 0.65);
+      color: #ffe436;
+      font-size: 0.7rem;
+      font-weight: bold;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      z-index: 2;
+    }
+    .gallery-count {
+      position: absolute;
+      bottom: 4px;
+      right: 4px;
+      background: rgba(0, 0, 0, 0.65);
+      color: #ffe436;
+      font-size: 0.7rem;
+      font-weight: bold;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      z-index: 2;
+    }
+    .gallery-name {
+      max-width: 100%;
+      font-weight: bold;
+      color: #ffe436;
+      font-size: clamp(0.65rem, 3vw, 0.85rem);
+      word-break: break-word;
+      text-align: center;
+    }
+    @media (max-width: 480px) {
+      .hotdog-gallery {
+        gap: 0.5rem;
+      }
+    }
     #leaderboard-modal {
       display: none;
       position: fixed;
@@ -215,6 +282,7 @@
     }
     #leaderboard-section {
       display: none;
+      width: 100%;
       margin-top: 2rem;
       max-width: 600px;
       margin-left: auto;
@@ -225,33 +293,30 @@
       font-size: 1.3rem;
       margin-bottom: 1rem;
     }
-    .leaderboard-entry {
-      background: rgba(255, 228, 54, 0.1);
-      border-left: 4px solid #ffe436;
-      padding: 0.75rem;
-      margin: 0.5rem 0;
-      text-align: left;
-      font-size: 0.9rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.75rem;
+    #image-input {
+      margin: 1rem 0;
     }
-    .leaderboard-name {
-      font-weight: bold;
-      color: #ffe436;
+    #image-preview {
+      display: none;
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 2px solid #ffe436;
+      margin: 0 auto 1rem;
     }
-    .leaderboard-score {
-      color: #fff;
-    }
-    .leaderboard-delete {
-      background: transparent;
+    .gallery-delete {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      z-index: 2;
+      background: rgba(0, 0, 0, 0.65);
       border: 1px solid #ff4d4d;
       color: #ff4d4d;
       cursor: pointer;
       padding: 0;
-      width: 1.8rem;
-      height: 1.8rem;
+      width: 1.6rem;
+      height: 1.6rem;
       font-size: 1rem;
       line-height: 1;
       border-radius: 50%;
@@ -263,7 +328,7 @@
 </head>
 <body>
   <h1>Hot Dog Calc</h1>
-  <p>How far are you from achieving your hot dog dreams?</p>
+  <p>How far are you from achieving your hotdog dreams?</p>
 
   <form id="hotdog-form">
     <label for="hotdogs-eaten">Hot Dogs Eaten:</label>
@@ -271,7 +336,7 @@
     <button type="submit" class="hotdog-btn"><span class="mustard-text">CALCULATE</span></button>
   </form>
 
-  <section id="results" style="display:none; margin-top: 2rem;">
+  <section id="results" style="display:none;">
     <p id="remaining"></p>
     <p id="per-day"></p>
     <p id="per-week"></p>
@@ -280,13 +345,17 @@
 
   <section id="leaderboard-section">
     <h3>TOP DOGS</h3>
-    <div id="leaderboard-list"></div>
+    <div class="hotdog-gallery" id="hotdog-gallery"></div>
   </section>
 
   <div id="leaderboard-modal">
     <div class="modal-content">
-      <h2>Enter Your Name</h2>
+      <h2>Add to the Leaderboard</h2>
+      <label for="name-input">Add your name</label>
       <input type="text" id="name-input" placeholder="Your name" maxlength="20">
+      <label for="image-input">Add photo evidence of your latest dog!</label>
+      <input type="file" id="image-input" accept="image/*">
+      <img id="image-preview" alt="Selected photo preview">
       <div class="modal-buttons">
         <button id="modal-save" class="hotdog-btn"><span class="mustard-text">SAVE</span></button>
         <button id="modal-cancel" class="hotdog-btn"><span class="mustard-text">CANCEL</span></button>
@@ -304,10 +373,13 @@
     const saveToLeaderboardBtn = document.getElementById('save-to-leaderboard');
     const leaderboardModal = document.getElementById('leaderboard-modal');
     const nameInput = document.getElementById('name-input');
+    const imageInput = document.getElementById('image-input');
+    const imagePreview = document.getElementById('image-preview');
     const modalSaveBtn = document.getElementById('modal-save');
     const modalCancelBtn = document.getElementById('modal-cancel');
     const leaderboardSection = document.getElementById('leaderboard-section');
-    const leaderboardList = document.getElementById('leaderboard-list');
+    const hotdogGallery = document.getElementById('hotdog-gallery');
+    const GALLERY_SIZE = 9;
 
     const API_BASE_URL = window.API_BASE_URL || (
       window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
@@ -339,12 +411,34 @@
       return [];
     }
 
-    async function saveScoreToServer(name) {
+    function compressImageFile(file, maxSize = 200, quality = 0.7) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(reader.error);
+        reader.onload = () => {
+          const img = new Image();
+          img.onerror = reject;
+          img.onload = () => {
+            const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.round(img.width * scale);
+            canvas.height = Math.round(img.height * scale);
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+          };
+          img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function saveScoreToServer(name, image) {
       try {
         const res = await fetch(`${API_BASE_URL}/api/leaderboard`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, hotdogs: currentHotdogsEaten })
+          body: JSON.stringify({ name, hotdogs: currentHotdogsEaten, image: image || null })
         });
         if (res.ok) {
           const json = await res.json();
@@ -380,29 +474,39 @@
         .replace(/'/g, '&#39;');
     }
 
+    function renderGallery(sortedEntries) {
+      hotdogGallery.innerHTML = sortedEntries
+        .slice(0, GALLERY_SIZE)
+        .map((entry, idx) => {
+          const rank = idx + 1;
+          const deleteButton = `<button class="gallery-delete" type="button" data-name="${escapeHtml(entry.name)}" aria-label="Delete ${escapeHtml(entry.name)}">×</button>`;
+          const tileStyle = entry.image ? ` style="background-image:url('${escapeHtml(entry.image)}')"` : '';
+          return `
+            <div class="gallery-card">
+              <div class="gallery-tile"${tileStyle}>
+                <span class="gallery-rank">#${rank}</span>
+                <span class="gallery-count">${entry.hotdogs}</span>
+                ${deleteButton}
+              </div>
+              <span class="gallery-name">${escapeHtml(entry.name)}</span>
+            </div>
+          `;
+        })
+        .join('');
+    }
+
     async function displayLeaderboard() {
       const entries = await fetchLeaderboard();
-      if (entries.length === 0) {
-        leaderboardSection.style.display = 'none';
-        return;
-      }
-      leaderboardSection.style.display = 'block';
-      leaderboardList.innerHTML = entries
-        .sort((a, b) => b.hotdogs - a.hotdogs)
-        .map((entry, idx) => `
-          <div class="leaderboard-entry">
-            <div>
-              <span class="leaderboard-name">${idx + 1}. ${escapeHtml(entry.name)}</span>
-              <span class="leaderboard-score"> — ${entry.hotdogs} hot dogs</span>
-            </div>
-            <button class="leaderboard-delete" type="button" data-name="${escapeHtml(entry.name)}" aria-label="Delete ${escapeHtml(entry.name)}">×</button>
-          </div>
-        `)
-        .join('');
+      const sortedEntries = entries.slice().sort((a, b) => b.hotdogs - a.hotdogs);
+      renderGallery(sortedEntries);
+      leaderboardSection.style.display = entries.length === 0 ? 'none' : 'block';
     }
 
     function showLeaderboardModal() {
       nameInput.value = '';
+      imageInput.value = '';
+      imagePreview.src = '';
+      imagePreview.style.display = 'none';
       leaderboardModal.style.display = 'flex';
       nameInput.focus();
     }
@@ -426,8 +530,8 @@
       resultsSection.style.display = 'block';
     });
 
-    leaderboardList.addEventListener('click', async (event) => {
-      const deleteButton = event.target.closest('.leaderboard-delete');
+    hotdogGallery.addEventListener('click', async (event) => {
+      const deleteButton = event.target.closest('.gallery-delete');
       if (!deleteButton) return;
 
       const entryName = deleteButton.getAttribute('data-name');
@@ -440,19 +544,36 @@
       displayLeaderboard();
     });
 
-    saveToLeaderboardBtn.addEventListener('click', showLeaderboardModal);
-    modalSaveBtn.addEventListener('click', async () => {
+    imageInput.addEventListener('change', () => {
+      const file = imageInput.files && imageInput.files[0];
+      if (!file) {
+        imagePreview.src = '';
+        imagePreview.style.display = 'none';
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        imagePreview.src = reader.result;
+        imagePreview.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    });
+
+    async function submitLeaderboardEntry() {
       if (!nameInput.value.trim()) return;
-      await saveScoreToServer(nameInput.value.trim());
+      const file = imageInput.files && imageInput.files[0];
+      const image = file ? await compressImageFile(file) : null;
+      await saveScoreToServer(nameInput.value.trim(), image);
       displayLeaderboard();
       hideLeaderboardModal();
-    });
+    }
+
+    saveToLeaderboardBtn.addEventListener('click', showLeaderboardModal);
+    modalSaveBtn.addEventListener('click', submitLeaderboardEntry);
     modalCancelBtn.addEventListener('click', hideLeaderboardModal);
     nameInput.addEventListener('keypress', async (e) => {
       if (e.key === 'Enter' && nameInput.value.trim()) {
-        await saveScoreToServer(nameInput.value.trim());
-        displayLeaderboard();
-        hideLeaderboardModal();
+        await submitLeaderboardEntry();
       }
     });
 
